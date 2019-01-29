@@ -1,0 +1,10 @@
+{
+  "name": "videodb",
+  "connector": "mongodb",
+  "url": "mongodb://localhost:27017/videodb",
+  "host": "localhost",
+  "port": 27017,
+  "user": "",
+  "password": "",
+  "database": "videodb"
+}
