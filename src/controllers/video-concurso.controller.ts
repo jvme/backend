@@ -1,3 +1,4 @@
+import { inject } from '@loopback/context';
 import {
   Count,
   CountSchema,
@@ -15,21 +16,25 @@ import {
   put,
   del,
   requestBody,
+  RestBindings,
+  Request,
+  Response,
 } from '@loopback/rest';
-import {VideoConcurso} from '../models';
-import {VideoConcursoRepository} from '../repositories';
+import * as multer from 'multer';
+import { VideoConcurso } from '../models';
+import { VideoConcursoRepository } from '../repositories';
 
 export class VideoConcursoController {
   constructor(
     @repository(VideoConcursoRepository)
-    public videoConcursoRepository : VideoConcursoRepository,
-  ) {}
+    public videoConcursoRepository: VideoConcursoRepository,
+  ) { }
 
   @post('/video-concursos', {
     responses: {
       '200': {
         description: 'VideoConcurso model instance',
-        content: {'application/json': {schema: {'x-ts-type': VideoConcurso}}},
+        content: { 'application/json': { schema: { 'x-ts-type': VideoConcurso } } },
       },
     },
   })
@@ -37,11 +42,44 @@ export class VideoConcursoController {
     return await this.videoConcursoRepository.create(videoConcurso);
   }
 
+
+  async upload(
+    @requestBody({
+      description: 'multipart/form-data value.',
+      required: true,
+      content: {
+        'multipart/form-data': {
+          // Skip body parsing
+          'x-parser': 'stream',
+          schema: { type: 'object' },
+        },
+      },
+    })
+    request: Request,
+    @inject(RestBindings.Http.RESPONSE) response: Response,
+  ): Promise<object> {
+    const storage = multer.memoryStorage();
+    const upload = multer({ storage });
+    return new Promise<object>((resolve, reject) => {
+      upload.any()(request, response, err => {
+        if (err) reject(err);
+        else {
+          resolve({
+            files: request.files,
+            // tslint:disable-next-line:no-any
+            fields: (request as any).fields,
+          });
+        }
+      });
+    });
+  }
+
+
   @get('/video-concursos/count', {
     responses: {
       '200': {
         description: 'VideoConcurso model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -57,7 +95,7 @@ export class VideoConcursoController {
         description: 'Array of VideoConcurso model instances',
         content: {
           'application/json': {
-            schema: {type: 'array', items: {'x-ts-type': VideoConcurso}},
+            schema: { type: 'array', items: { 'x-ts-type': VideoConcurso } },
           },
         },
       },
@@ -73,7 +111,7 @@ export class VideoConcursoController {
     responses: {
       '200': {
         description: 'VideoConcurso PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -88,7 +126,7 @@ export class VideoConcursoController {
     responses: {
       '200': {
         description: 'VideoConcurso model instance',
-        content: {'application/json': {schema: {'x-ts-type': VideoConcurso}}},
+        content: { 'application/json': { schema: { 'x-ts-type': VideoConcurso } } },
       },
     },
   })
